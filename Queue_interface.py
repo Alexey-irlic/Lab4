@@ -39,12 +39,16 @@ class UI(QMainWindow):
 
     def slide_1(self, value):
         self.label.setText(str(value))
+        return value
 
-    def slide_2(self, value):
+    def slide_2(self, value) -> int:
         self.label2.setText(str(value))
+        return int(value) 
 
 
 # Initialize The App
-app = QApplication(sys.argv)
-UIWindow = UI()
-app.exec_()
+
+def application():
+    app = QApplication(sys.argv)
+    UIWindow = UI()
+    app.exec_()
