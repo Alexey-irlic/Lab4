@@ -88,7 +88,7 @@ class UI(QMainWindow):
             # self.tableWidget_queue.item(row, self.MaxPriorities[row] - 1).setBackground(QColor(250, 250, 250))
             if self.MaxPriorities[row] != 0:
                 self.MaxPriorities[row] -= 1
-            print(self.MaxPriorities)
+
         # self.tableWidget_queue.setCurrentItem(self.tableWidget_queue.item(0, 0))
 
     def data_table(self):
