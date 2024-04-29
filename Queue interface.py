@@ -27,14 +27,19 @@ class UI(QMainWindow):
         self.timer1 = QTimer(self)
         self.timer2 = QTimer(self)
 
-        self.pushButton_Start_D1.clicked.connect(self.start_timer)
-        self.pushButton_Stop_D1.clicked.connect(self.stop_timer)
-        self.slider.valueChanged.connect(self.start_timer)
+        self.pushButton_Start_D1.clicked.connect(self.start_timer_d1)
+        self.pushButton_Stop_D1.clicked.connect(self.stop_timer_d1)
+        self.slider.valueChanged.connect(self.start_timer_d1)
 
-        self.pushButton_Start_D2.clicked.connect(self.queue_table_2)
-        self.slider2.valueChanged.connect(self.slide_2)
+        self.pushButton_Start_D2.clicked.connect(self.start_timer_d2)
+        self.pushButton_Stop_D2.clicked.connect(self.stop_timer_d2)
+        self.slider2.valueChanged.connect(self.start_timer_d2)
 
         self.timer1.timeout.connect(self.queue_table)
+        self.timer2.timeout.connect(self.queue_table_2)
+
+        self.processed = [0] * 10
+        self.data_table()
 
         # Show The App
         self.show()
@@ -47,10 +52,7 @@ class UI(QMainWindow):
         slider.setTickInterval(5)
         slider.setSingleStep(5)
 
-    def slide_2(self, value):
-        self.label2.setText(str(value) + " мс")
-
-    def start_timer(self, value):
+    def start_timer_d1(self, value):
         if value:
             self.label.setText(str(value) + " мс")
         else:
@@ -59,10 +61,24 @@ class UI(QMainWindow):
         self.pushButton_Start_D1.setEnabled(False)
         self.pushButton_Stop_D1.setEnabled(True)
 
-    def stop_timer(self):
+    def stop_timer_d1(self):
         self.timer1.stop()
         self.pushButton_Start_D1.setEnabled(True)
         self.pushButton_Stop_D1.setEnabled(False)
+
+    def start_timer_d2(self, value):
+        if value:
+            self.label2.setText(str(value) + " мс")
+        else:
+            value = self.slider2.value()
+        self.timer2.start(value)
+        self.pushButton_Start_D2.setEnabled(False)
+        self.pushButton_Stop_D2.setEnabled(True)
+
+    def stop_timer_d2(self):
+        self.timer2.stop()
+        self.pushButton_Start_D2.setEnabled(True)
+        self.pushButton_Stop_D2.setEnabled(False)
 
     def queue_table(self):
         line = random.randint(0, 9)  # Он же приоритет
@@ -72,30 +88,50 @@ class UI(QMainWindow):
             self.tableWidget_queue.setItem(line, column, QTableWidgetItem(item))
             self.tableWidget_queue.item(line, column).setBackground(QColor(250, 250, 0))
             self.MaxPriorities[line] += 1
+            self.data_table()
 
     def queue_table_2(self):
+        # Ищем первую заполненную строку(приоритет)
+        count = 0
+        for i in range(9, -1, -1):
+            if self.MaxPriorities[i] != 0:
+                count = i
+
         # Смещаем элементы на одну позицию влево
-        for row in range(self.tableWidget_queue.rowCount()):
-            for col in range(self.MaxPriorities[row]):
-                item = self.tableWidget_queue.item(row, col)
-                next_item = self.tableWidget_queue.item(row, col + 1)
-                if item and next_item:
-                    item.setText(next_item.text())
+        for col in range(self.MaxPriorities[count]):
+            item = self.tableWidget_queue.item(count, col)
+            next_item = self.tableWidget_queue.item(count, col + 1)
+            if item and next_item:
+                item.setText(next_item.text())
 
         # Очищаем последнюю колонку
-        for row in range(self.tableWidget_queue.rowCount()):
-            self.tableWidget_queue.setItem(row, self.MaxPriorities[row] - 1, QTableWidgetItem(""))
-            # self.tableWidget_queue.item(row, self.MaxPriorities[row] - 1).setBackground(QColor(250, 250, 250))
-            if self.MaxPriorities[row] != 0:
-                self.MaxPriorities[row] -= 1
+        self.tableWidget_queue.setItem(count, self.MaxPriorities[count] - 1, QTableWidgetItem(""))
+        if self.MaxPriorities[count] != 0:
+            self.MaxPriorities[count] -= 1
+            self.processed[count] += 1
 
-        # self.tableWidget_queue.setCurrentItem(self.tableWidget_queue.item(0, 0))
+        self.data_table()
 
     def data_table(self):
-        self.ui.tableWidget_queue.setColumnWidth(0, 120)
-        self.ui.tableWidget_queue.setColumnWidth(1, 50)
+        count = 0
+        for i in self.MaxPriorities:
+            self.tableWidget_properties.setItem(count, 0, QTableWidgetItem(str(i)))
+            count += 1
 
-        # for item in self.ui.tableWidget.selectedItems():
+        count = 0
+        for i in self.processed:
+            self.tableWidget_properties.setItem(count, 1, QTableWidgetItem(str(i)))
+            count += 1
+
+        for i in range(self.tableWidget_properties.rowCount()):
+            item = QTableWidgetItem(str(int(self.tableWidget_properties.item(i, 0).text()) + int(
+                self.tableWidget_properties.item(i, 1).text())))
+            self.tableWidget_properties.setItem(i, 2, item)
+
+        # self.ui.tableWidget_queue.setColumnWidth(0, 120)
+        # self.ui.tableWidget_queue.setColumnWidth(1, 50)
+
+        # for item in self.tableWidget_queue.selectedItems():
         #     print(item.row(), item.column(), item.text())
 
 
