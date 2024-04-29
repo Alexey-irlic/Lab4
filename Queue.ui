@@ -494,7 +494,7 @@
      <string>100 мс</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="label_for_slader_D1">
     <property name="geometry">
      <rect>
       <x>400</x>
