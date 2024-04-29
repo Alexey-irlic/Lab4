@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import *  # QMainWindow, QApplication, QSlider, QLabel, QTableWidgets
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
@@ -10,36 +10,39 @@ class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()
 
-        # Загрузите файл пользовательского интерфейса
+        # Загрузка файла пользовательского интерфейса
         uic.loadUi("Queue.ui", self)
 
-        # Определите наши виджеты
-        self.slider = self.findChild(QSlider, "horizontalSlider_D1")
-        self.label = self.findChild(QLineEdit, "label_for_slader_D1")
+        self.num_of_app = [0] * 10  # Хранение количества элементов каждой строки (приоритета)
+        self.processed_applications = [0] * 10  # Количество обработанных заявок (для таблицы со статистикой)
+
+        # Определение виджетов
+        self.slider1 = self.findChild(QSlider, "horizontalSlider_D1")
+        self.label1 = self.findChild(QLineEdit, "label_for_slader_D1")
         self.slider2 = self.findChild(QSlider, "horizontalSlider_D2")
         self.label2 = self.findChild(QLineEdit, "label_for_slader_D2")
 
-        # Установить свойства ползунка
-        self.slider_properties(self.slider)
+        # Установка свойств ползунков
+        self.slider_properties(self.slider1)
         self.slider_properties(self.slider2)
 
-        self.MaxPriorities = [0] * 10
+        # Создание таймеров
         self.timer1 = QTimer(self)
         self.timer2 = QTimer(self)
 
+        # Подсоединение к первому таймеру кнопок старт/стоп и ползунка
         self.pushButton_Start_D1.clicked.connect(self.start_timer_d1)
         self.pushButton_Stop_D1.clicked.connect(self.stop_timer_d1)
-        self.slider.valueChanged.connect(self.start_timer_d1)
+        self.slider1.valueChanged.connect(self.start_timer_d1)
 
+        # Подсоединение к второму таймеру кнопок старт/стоп и ползунка
         self.pushButton_Start_D2.clicked.connect(self.start_timer_d2)
         self.pushButton_Stop_D2.clicked.connect(self.stop_timer_d2)
         self.slider2.valueChanged.connect(self.start_timer_d2)
 
-        self.timer1.timeout.connect(self.queue_table)
-        self.timer2.timeout.connect(self.queue_table_2)
-
-        self.processed = [0] * 10
-        self.data_table()
+        # Таймеры подсоединяются к диспетчерам
+        self.timer1.timeout.connect(self.d1)
+        self.timer2.timeout.connect(self.d2)
 
         # Show The App
         self.show()
@@ -49,14 +52,14 @@ class UI(QMainWindow):
         slider.setMaximum(500)
         slider.setValue(0)
         slider.setTickPosition(QSlider.TicksBelow)
-        slider.setTickInterval(5)
-        slider.setSingleStep(5)
+        slider.setTickInterval(20)
+        slider.setSingleStep(20)
 
     def start_timer_d1(self, value):
         if value:
-            self.label.setText(str(value) + " мс")
+            self.label1.setText(str(value) + " мс")
         else:
-            value = self.slider.value()
+            value = self.slider1.value()
         self.timer1.start(value)
         self.pushButton_Start_D1.setEnabled(False)
         self.pushButton_Stop_D1.setEnabled(True)
@@ -80,59 +83,59 @@ class UI(QMainWindow):
         self.pushButton_Start_D2.setEnabled(True)
         self.pushButton_Stop_D2.setEnabled(False)
 
-    def queue_table(self):
-        line = random.randint(0, 9)  # Он же приоритет
-        if self.MaxPriorities[line] < 10:
-            column = self.MaxPriorities[line]
+    def d1(self):
+        line = random.randint(0, 9)
+        if self.num_of_app[line] < 10:
+            column = self.num_of_app[line]
             item = str(random.randint(1, 10))
             self.tableWidget_queue.setItem(line, column, QTableWidgetItem(item))
             self.tableWidget_queue.item(line, column).setBackground(QColor(250, 250, 0))
-            self.MaxPriorities[line] += 1
-            self.data_table()
+            self.num_of_app[line] += 1
 
-    def queue_table_2(self):
+        # Отдаем данные в статистику
+        self.data_table()
+
+    def d2(self):
         # Ищем первую заполненную строку(приоритет)
-        count = 0
+        priority = 0
         for i in range(9, -1, -1):
-            if self.MaxPriorities[i] != 0:
-                count = i
+            if self.num_of_app[i] != 0:
+                priority = i
 
         # Смещаем элементы на одну позицию влево
-        for col in range(self.MaxPriorities[count]):
-            item = self.tableWidget_queue.item(count, col)
-            next_item = self.tableWidget_queue.item(count, col + 1)
+        for col in range(self.num_of_app[priority]):
+            item = self.tableWidget_queue.item(priority, col)
+            next_item = self.tableWidget_queue.item(priority, col + 1)
             if item and next_item:
                 item.setText(next_item.text())
 
         # Очищаем последнюю колонку
-        self.tableWidget_queue.setItem(count, self.MaxPriorities[count] - 1, QTableWidgetItem(""))
-        if self.MaxPriorities[count] != 0:
-            self.MaxPriorities[count] -= 1
-            self.processed[count] += 1
+        self.tableWidget_queue.setItem(priority, self.num_of_app[priority] - 1, QTableWidgetItem(""))
+        if self.num_of_app[priority] != 0:
+            self.num_of_app[priority] -= 1
+            self.processed_applications[priority] += 1
 
+        # Отдаем данные в статистику
         self.data_table()
 
     def data_table(self):
+        # Количество заявок в системе
         count = 0
-        for i in self.MaxPriorities:
+        for i in self.num_of_app:
             self.tableWidget_properties.setItem(count, 0, QTableWidgetItem(str(i)))
             count += 1
 
+        # Количество обработанных заявок
         count = 0
-        for i in self.processed:
+        for i in self.processed_applications:
             self.tableWidget_properties.setItem(count, 1, QTableWidgetItem(str(i)))
             count += 1
 
+        # Общее количество заявок
         for i in range(self.tableWidget_properties.rowCount()):
             item = QTableWidgetItem(str(int(self.tableWidget_properties.item(i, 0).text()) + int(
                 self.tableWidget_properties.item(i, 1).text())))
             self.tableWidget_properties.setItem(i, 2, item)
-
-        # self.ui.tableWidget_queue.setColumnWidth(0, 120)
-        # self.ui.tableWidget_queue.setColumnWidth(1, 50)
-
-        # for item in self.tableWidget_queue.selectedItems():
-        #     print(item.row(), item.column(), item.text())
 
 
 # Initialize The App
