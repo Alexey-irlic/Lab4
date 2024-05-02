@@ -18,9 +18,9 @@ class UI(QMainWindow):
 
         # Определение виджетов
         self.slider1 = self.findChild(QSlider, "horizontalSlider_D1")
-        self.label1 = self.findChild(QLineEdit, "label_for_slader_D1")
+        self.label1 = self.findChild(QLabel, "label_for_slader_D1")
         self.slider2 = self.findChild(QSlider, "horizontalSlider_D2")
-        self.label2 = self.findChild(QLineEdit, "label_for_slader_D2")
+        self.label2 = self.findChild(QLabel, "label_for_slader_D2")
 
         # Установка свойств ползунков
         self.slider_properties(self.slider1)
@@ -49,11 +49,11 @@ class UI(QMainWindow):
 
     def slider_properties(self, slider):
         slider.setMinimum(100)
-        slider.setMaximum(500)
+        slider.setMaximum(1000)
         slider.setValue(0)
         slider.setTickPosition(QSlider.TicksBelow)
-        slider.setTickInterval(20)
-        slider.setSingleStep(20)
+        slider.setTickInterval(50)
+        slider.setSingleStep(50)
 
     def start_timer_d1(self, value):
         if value:
@@ -92,7 +92,7 @@ class UI(QMainWindow):
             self.tableWidget_queue.item(line, column).setBackground(QColor(250, 250, 0))
             self.num_of_app[line] += 1
 
-        # Отдаем данные в статистику
+        # Обновляем статистику
         self.data_table()
 
     def d2(self):
@@ -115,7 +115,7 @@ class UI(QMainWindow):
             self.num_of_app[priority] -= 1
             self.processed_applications[priority] += 1
 
-        # Отдаем данные в статистику
+        # Обновляем статистику
         self.data_table()
 
     def data_table(self):
@@ -138,7 +138,6 @@ class UI(QMainWindow):
             self.tableWidget_properties.setItem(i, 2, item)
 
 
-# Initialize The App
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     UIWindow = UI()
