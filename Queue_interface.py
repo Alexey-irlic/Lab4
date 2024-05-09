@@ -11,7 +11,7 @@ class UI(QMainWindow):
         super(UI, self).__init__()
 
         # Загрузка файла пользовательского интерфейса
-        uic.loadUi("Queue.ui", self)
+        uic.loadUi("Queue_02.ui", self)
 
         self.num_of_app = [0] * 10  # Хранение количества элементов каждой строки (приоритета)
         self.processed_applications = [0] * 10  # Количество обработанных заявок (для таблицы со статистикой)
@@ -89,7 +89,7 @@ class UI(QMainWindow):
             column = self.num_of_app[line]
             item = str(random.randint(1, 10))
             self.tableWidget_queue.setItem(line, column, QTableWidgetItem(item))
-            self.tableWidget_queue.item(line, column).setBackground(QColor(250, 250, 0))
+            self.tableWidget_queue.item(line, column).setBackground(QColor(250, 232, 172))
             self.num_of_app[line] += 1
 
         # Обновляем статистику
